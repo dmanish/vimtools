@@ -23,6 +23,7 @@ endfunction
 "every time there is a write operation
 "autocmd BufWritePre * :call StripTrailingWhitespace()
 
+let g:baseDir = "./"
 python << endpython
 #common python functions and globals section 
 import vim
@@ -79,12 +80,13 @@ python << endpython
 import vim
 import subprocess
 
+baseDir = vim.eval("g:baseDir")
 cCppIdentifier = getCCppIdentifier()
 myFileName = getMyFileName()
 print delimLine
-print("looking in .h files for identifier : " + cCppIdentifier + " ..")
+print("looking in " + baseDir + "-> .h files for identifier : " + cCppIdentifier + " ..")
 print delimLine
-command = 'find . -name "*.h" | grep -v ' + myFileName + '| xargs grep ' + cCppIdentifier
+command = 'find ' + baseDir + ' -name "*.h" | grep -v ' + myFileName + '| xargs grep ' + cCppIdentifier
 popenObj = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 out = popenObj.communicate()
 tuplen = len(out)
@@ -100,12 +102,13 @@ python << endpython
 import vim
 import subprocess
 
+baseDir = vim.eval("g:baseDir")
 cCppIdentifier = getCCppIdentifier()
 myFileName = getMyFileName()
 print delimLine
-print("looking in .cpp files for identifier : " + cCppIdentifier + " ..")
+print("looking in " + baseDir + "->.cpp files for identifier : " + cCppIdentifier + " ..")
 print delimLine
-command = 'find . -name "*.cpp" | grep -v ' + myFileName + '| xargs grep ' + cCppIdentifier
+command = 'find ' + baseDir + ' -name "*.cpp" | grep -v ' + myFileName + '| xargs grep ' + cCppIdentifier
 popenObj = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 out = popenObj.communicate()
 tuplen = len(out)
@@ -122,11 +125,12 @@ import vim
 import subprocess
 
 pyIdentifier = getPyIdentifier()
+baseDir = vim.eval("g:baseDir")
 myFileName = getMyFileName()
 print delimLine
-print("looking in .py files for identifier : " + pyIdentifier + " ..")
+print("looking in " + baseDir + "->*.py files for identifier : " + pyIdentifier + " ..")
 print delimLine
-command = 'find . -name "*.py" | grep -v ' + myFileName + ' | xargs grep ' + pyIdentifier
+command = 'find ' + baseDir + ' -name "*.py" | grep -v ' + myFileName + ' | xargs grep ' + pyIdentifier
 popenObj = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 out = popenObj.communicate()
 tuplen = len(out)
