@@ -19,6 +19,8 @@ function! StripTrailingWhitespace()
     normal `Z
 endfunction
 
+"uncomment this if you want to call this function
+"every time there is a write operation
 "autocmd BufWritePre * :call StripTrailingWhitespace()
 
 python << endpython
@@ -27,6 +29,8 @@ import vim
 from string import ascii_letters, digits
 cppSpecialChars = '_'
 pySpecialChars = '_'
+delimChar = "-"
+delimLine = delimChar * 80
 
 def getCCppIdentifier():
     (row, col) = vim.current.window.cursor
@@ -77,7 +81,9 @@ import subprocess
 
 cCppIdentifier = getCCppIdentifier()
 myFileName = getMyFileName()
+print delimLine
 print("looking in .h files for identifier : " + cCppIdentifier + " ..")
+print delimLine
 command = 'find . -name "*.h" | grep -v ' + myFileName + '| xargs grep ' + cCppIdentifier
 popenObj = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 out = popenObj.communicate()
@@ -96,7 +102,9 @@ import subprocess
 
 cCppIdentifier = getCCppIdentifier()
 myFileName = getMyFileName()
+print delimLine
 print("looking in .cpp files for identifier : " + cCppIdentifier + " ..")
+print delimLine
 command = 'find . -name "*.cpp" | grep -v ' + myFileName + '| xargs grep ' + cCppIdentifier
 popenObj = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 out = popenObj.communicate()
@@ -115,7 +123,9 @@ import subprocess
 
 pyIdentifier = getPyIdentifier()
 myFileName = getMyFileName()
+print delimLine
 print("looking in .py files for identifier : " + pyIdentifier + " ..")
+print delimLine
 command = 'find . -name "*.py" | grep -v ' + myFileName + ' | xargs grep ' + pyIdentifier
 popenObj = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 out = popenObj.communicate()
