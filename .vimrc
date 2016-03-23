@@ -80,7 +80,11 @@ python << endpython
 import vim
 import subprocess
 
-baseDir = vim.eval("g:baseDir")
+eval_val = int(vim.eval('exists("g:baseDir")'))
+if eval_val:
+    baseDir = vim.eval("g:baseDir")
+else:
+    baseDir = "./"
 cCppIdentifier = getCCppIdentifier()
 myFileName = getMyFileName()
 print delimLine
@@ -102,7 +106,11 @@ python << endpython
 import vim
 import subprocess
 
-baseDir = vim.eval("g:baseDir")
+eval_val = int(vim.eval('exists("g:baseDir")'))
+if eval_val:
+    baseDir = vim.eval("g:baseDir")
+else:
+    baseDir = "./"
 cCppIdentifier = getCCppIdentifier()
 myFileName = getMyFileName()
 print delimLine
@@ -124,8 +132,12 @@ python << endpython
 import vim
 import subprocess
 
+eval_val = int(vim.eval('exists("g:baseDir")'))
+if eval_val:
+    baseDir = vim.eval("g:baseDir")
+else:
+    baseDir = "./"
 pyIdentifier = getPyIdentifier()
-baseDir = vim.eval("g:baseDir")
 myFileName = getMyFileName()
 print delimLine
 print("looking in " + baseDir + "->*.py files for identifier : " + pyIdentifier + " ..")
