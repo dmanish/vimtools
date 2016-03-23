@@ -73,6 +73,17 @@ def getSelectedText():
     myText = vim.eval("expand('@*')")
     return myText
 
+def getBaseDir():
+    eval_val = int(vim.eval('exists("g:baseDir")'))
+    if eval_val:
+        baseDir = vim.eval("g:baseDir")
+    else:
+        baseDir = "./"
+    baseDirLastCharPos = len(baseDir) - 1
+    if baseDir[baseDirLastCharPos] != '/' :
+        baseDir += "/"
+    return baseDir
+
 endpython
 
 function! MyFindInH()
@@ -80,15 +91,11 @@ python << endpython
 import vim
 import subprocess
 
-eval_val = int(vim.eval('exists("g:baseDir")'))
-if eval_val:
-    baseDir = vim.eval("g:baseDir")
-else:
-    baseDir = "./"
+baseDir = getBaseDir()
 cCppIdentifier = getCCppIdentifier()
 myFileName = getMyFileName()
 print delimLine
-print("looking in " + baseDir + "-> .h files for identifier : " + cCppIdentifier + " ..")
+print("looking in " + baseDir + "*.h files for identifier : " + cCppIdentifier + " ..")
 print delimLine
 command = 'find ' + baseDir + ' -name "*.h" | grep -v ' + myFileName + '| xargs grep ' + cCppIdentifier
 popenObj = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
@@ -106,15 +113,11 @@ python << endpython
 import vim
 import subprocess
 
-eval_val = int(vim.eval('exists("g:baseDir")'))
-if eval_val:
-    baseDir = vim.eval("g:baseDir")
-else:
-    baseDir = "./"
+baseDir = getBaseDir()
 cCppIdentifier = getCCppIdentifier()
 myFileName = getMyFileName()
 print delimLine
-print("looking in " + baseDir + "->.cpp files for identifier : " + cCppIdentifier + " ..")
+print("looking in " + baseDir + "*.cpp files for identifier : " + cCppIdentifier + " ..")
 print delimLine
 command = 'find ' + baseDir + ' -name "*.cpp" | grep -v ' + myFileName + '| xargs grep ' + cCppIdentifier
 popenObj = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
@@ -132,15 +135,11 @@ python << endpython
 import vim
 import subprocess
 
-eval_val = int(vim.eval('exists("g:baseDir")'))
-if eval_val:
-    baseDir = vim.eval("g:baseDir")
-else:
-    baseDir = "./"
+baseDir = getBaseDir()
 pyIdentifier = getPyIdentifier()
 myFileName = getMyFileName()
 print delimLine
-print("looking in " + baseDir + "->*.py files for identifier : " + pyIdentifier + " ..")
+print("looking in " + baseDir + "*.py files for identifier : " + pyIdentifier + " ..")
 print delimLine
 command = 'find ' + baseDir + ' -name "*.py" | grep -v ' + myFileName + ' | xargs grep ' + pyIdentifier
 popenObj = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
