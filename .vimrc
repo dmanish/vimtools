@@ -25,6 +25,8 @@ endfunction
 
 let g:basedir = "./"
 let g:filetype = "*.cpp,*.h,*py"
+let g:exactsearch = 0
+let g:ignorecasesearch = 0
 python << endpython
 #common python functions and globals section 
 import vim
@@ -33,6 +35,7 @@ cppSpecialChars = '_'
 pySpecialChars = '_'
 delimChar = "="
 delimLine = delimChar * 80
+out2 = []
 
 def getCCppIdentifier():
     (row, col) = vim.current.window.cursor
@@ -70,10 +73,6 @@ def getMyFileName():
     myName = vim.eval("expand('%:t')")
     return myName
 
-#def getSelectedText():
-#    myText = vim.eval("expand('@*')")
-#    return myText
-
 def getBaseDir():
     eval_val = int(vim.eval('exists("g:basedir")'))
     if eval_val:
@@ -91,8 +90,24 @@ def getFileTypes():
         fileType = vim.eval("g:filetype")
     else:
         fileType = "*.cpp,*.h,*.py"
-    #fileTypes = fileType.split(',')
     return fileType
+
+def getExactSearch():
+    eval_val = int(vim.eval('exists("g:exactsearch")'))
+    if eval_val:
+        exactSearch = vim.eval("g:exactsearch")
+    else:
+        exactSearch = 0
+    return exactSearch
+
+def getIgnoreCaseSearch():
+    eval_val = int(vim.eval('exists("g:ignorecasesearch")'))
+    if eval_val:
+        exactSearch = vim.eval("g:ignorecasesearch")
+    else:
+        exactSearch = 0
+    return exactSearch
+
 
 def getSelectedText():
     buf = vim.current.buffer
@@ -106,6 +121,13 @@ def getSelectedText():
         lines[0] = lines[0][col1:]
         lines[-1] = lines[-1][:col2 + 1]
     return "\n".join(lines)
+
+def python_input(message = 'continue..'):
+    vim.command('call inputsave()')
+    vim.command("let user_input = input('" + message + ": ')")
+    #vim.command('call system("echo '\r'")')
+    vim.command('call inputrestore()')
+    return vim.eval('user_input')
 
 endpython
 
@@ -135,21 +157,45 @@ function! MyFindInCpp()
 python << endpython
 import vim
 import subprocess
+import select
+negativeInput = ['n', 'N', 'no', 'No', 'NO']
 
 baseDir = getBaseDir()
 cCppIdentifier = getCCppIdentifier()
 myFileName = getMyFileName()
+exactSearch = getExactSearch()
+ignoreCaseSearch = getIgnoreCaseSearch()
 print("looking in " + baseDir + "*.cpp files for identifier : " + cCppIdentifier + " ..")
 print delimLine
 sys.stdout.flush()
-command = 'find ' + baseDir + ' -name "*.cpp" | grep -v ' + myFileName + '| xargs grep ' + cCppIdentifier
+command = 'find ' + baseDir + ' -name "*.cpp" | grep -v ' + myFileName + '| xargs grep '
+if(exactSearch == '1'):
+    command += '-w '
+if(ignoreCaseSearch == '1'):
+    command += '-i '
+command += cCppIdentifier
 popenObj = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 out = popenObj.communicate()
-tuplen = len(out)
-line = 0
-while (line < tuplen):
-    print out[line]
-    line += 1
+out2 = out[0].split("\n")
+outlen = len(out2)
+if(outlen == 1):
+    print "Found No results"
+if(outlen > 1):
+    print "Found " + str(outlen - 1) + " results:"
+    line = 0
+    lines = 0
+    userInput = 'y'
+    sys.stdout.flush()
+    while ((line < (outlen - 1)) and (userInput not in negativeInput)):
+        print str(line) + ' : ' + out2[line]
+        sys.stdout.flush()
+        line += 1
+        lines += 1
+        if (lines == 10):
+            lines = 0
+            vim.command('call "r,w,e = select.select([sys.stdin], [], [],)"')
+            if (r):
+                userInput = sys.stdin.readline().strip()
 endpython
 endfunction
 
@@ -194,7 +240,7 @@ print(delimLine)
 sys.stdout.flush()
 fileTypesListLen = len(fileTypesList)
 if fileTypesListLen == 1:
-    command = 'find ' + baseDir + ' - type f -name "' + fileTypesList[0] + '" | xargs grep "' + selectedText + '"'
+    command = 'find ' + baseDir + ' -type f -name "' + fileTypesList[0] + '" | xargs grep "' + selectedText + '"'
 else:
     command = 'find ' + baseDir + ' -type f \( '
     for type in range(fileTypesListLen - 1):
@@ -212,6 +258,19 @@ while (line < tuplen):
 endpython
 endfunction
 
+
+function! MyOpen(filenum)
+python << endpython
+import vim
+filenum = int(vim.eval("a:filenum"))
+out3 = out2[filenum].split(':')
+filePath = out3[0]
+print "opening : "  + filePath
+vim.command(':sp ' + filePath)
+endpython
+endfunction
+
+command! -nargs=1 O call MyOpen(<f-args>)
 nmap <F3> :call MyFindInH()<CR>
 nmap <F4> :call MyFindInCpp()<CR>
 nmap <F5> :call MyFindInPy()<CR>
