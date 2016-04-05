@@ -19,6 +19,14 @@ function! StripTrailingWhitespace()
     normal `Z
 endfunction
 
+function! s:getchar()
+    let c = getchar()
+    if c =~ '^\d\+$'
+        let c = nr2char(c)
+    endif
+    return c
+endfunction
+
 "uncomment this if you want to call this function
 "every time there is a write operation
 "autocmd BufWritePre * :call StripTrailingWhitespace()
@@ -129,6 +137,11 @@ def python_input(message = 'continue..'):
     vim.command('call inputrestore()')
     return vim.eval('user_input')
 
+def get_char():
+    vim.command("let input = s:getchar()")
+    char = vim.eval("input")
+    return char
+
 endpython
 
 function! MyFindInH()
@@ -158,7 +171,7 @@ python << endpython
 import vim
 import subprocess
 import select
-negativeInput = ['n', 'N', 'no', 'No', 'NO']
+negativeInput = ['n', 'N', 'q','Q']
 
 baseDir = getBaseDir()
 cCppIdentifier = getCCppIdentifier()
@@ -168,7 +181,7 @@ ignoreCaseSearch = getIgnoreCaseSearch()
 print("looking in " + baseDir + "*.cpp files for identifier : " + cCppIdentifier + " ..")
 print delimLine
 sys.stdout.flush()
-command = 'find ' + baseDir + ' -name "*.cpp" | grep -v ' + myFileName + '| xargs grep '
+command = 'find ' + baseDir + ' -name "*.cpp" | grep -v ' + myFileName + '| xargs grep -n '
 if(exactSearch == '1'):
     command += '-w '
 if(ignoreCaseSearch == '1'):
@@ -193,9 +206,7 @@ if(outlen > 1):
         lines += 1
         if (lines == 10):
             lines = 0
-            vim.command('call "r,w,e = select.select([sys.stdin], [], [],)"')
-            if (r):
-                userInput = sys.stdin.readline().strip()
+            userInput = get_char()
 endpython
 endfunction
 
@@ -258,22 +269,23 @@ while (line < tuplen):
 endpython
 endfunction
 
-
 function! MyOpen(filenum)
 python << endpython
 import vim
 filenum = int(vim.eval("a:filenum"))
 out3 = out2[filenum].split(':')
 filePath = out3[0]
+lineNum = out3[1]
 print "opening : "  + filePath
-vim.command(':sp ' + filePath)
+vim.command(":sp " + filePath)
+vim.command("exe " + lineNum)
 endpython
 endfunction
 
 command! -nargs=1 O call MyOpen(<f-args>)
+nmap <F2> :call StripTrailingWhitespace()<CR>
+map! <F2> :call StripTrailingWhitespace()<CR>
 nmap <F3> :call MyFindInH()<CR>
 nmap <F4> :call MyFindInCpp()<CR>
 nmap <F5> :call MyFindInPy()<CR>
 nmap <F6> :call MyFindSelectedText()<CR>
-nmap <F2> :call StripTrailingWhitespace()<CR>
-map! <F2> :call StripTrailingWhitespace()<CR>
